@@ -1,0 +1,16 @@
+{
+  "name": "resin-release",
+  "version": "0.0.1",
+  "description": "Create releases on Resin without the boilerplate",
+  "main": "src/index",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/resin-io-modules/resin-release.git"
+  },
+  "author": "Resin.io",
+  "license": "Apache-2.0",
+  "bugs": {
+    "url": "https://github.com/resin-io-modules/resin-release/issues"
+  },
+  "homepage": "https://github.com/resin-io-modules/resin-release#readme"
+}
