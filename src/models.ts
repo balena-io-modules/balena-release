@@ -118,10 +118,10 @@ export function get<T>(api: ApiClient, resource: string, id: number, expand?: Ex
 }
 
 function wrapResponseError<E extends Error>(e: E): void {
-	if (e.name !== 'StatusError') {
+	const error: { statusCode?: number } = e as any;
+	if (!error.statusCode) {
 		throw e;
 	}
-	const error: { statusCode: number } = e as any;
 	switch (error.statusCode) {
 	case 400:
 		throw new errors.BadRequestError(e);
