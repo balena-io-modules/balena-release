@@ -7,15 +7,42 @@ import * as compose from 'resin-compose-parse';
 import * as models from './models';
 import { Dict } from './types';
 
+export interface ClientConfig {
+	/**
+	 * The host address of the API server to use, complete with the protocol,
+	 * eg. `https://api.resin.io`. This module will issue requests to v4 of
+	 * the API.
+	 */
+	apiEndpoint: string;
+
+	/**
+	 * The complete string to forward as Authorization HTTP header, eg.
+	 * `Bearer <authtoken>`.
+	 */
+	auth: string;
+}
+
+export function createClient(config: ClientConfig): ApiClient {
+	return new ApiClient({
+		apiPrefix: `${config.apiEndpoint}/v4`,
+		passthrough: {
+			headers: {
+				Authorization: config.auth,
+			},
+		},
+	});
+}
+
 export interface Request {
 	/**
 	 * An instance of PineJS, appropriately authenticated and configured for the
-	 * API server to use.
+	 * API server to use. The only compatible API version is v4, so make sure to
+	 * configure `apiPrefix` appropriately.
 	 *
 	 * ```
 	 * import Pine = require('pinejs-client');
 	 * const client = new Pine({
-	 *   apiPrefix: 'https://api.resin.io',
+	 *   apiPrefix: 'https://api.resin.io/v4',
 	 *   passthrough: {
 	 *     headers: {
 	 *       Authorization: `Bearer ${authToken}`,
@@ -23,6 +50,9 @@ export interface Request {
 	 *   },
 	 * });
 	 * ```
+	 *
+	 * You can use the `createClient` convenience function of this module to create
+	 * a client that can reused across requests.
 	 */
 	client: ApiClient;
 
