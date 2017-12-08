@@ -24,7 +24,7 @@ export interface ClientConfig {
 
 export function createClient(config: ClientConfig): ApiClient {
 	return new ApiClient({
-		apiPrefix: `${config.apiEndpoint}/v4`,
+		apiPrefix: `${config.apiEndpoint}/v4/`,
 		passthrough: {
 			headers: {
 				Authorization: config.auth,

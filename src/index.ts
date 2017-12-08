@@ -11,6 +11,14 @@ export {
 } from './api';
 
 /**
+ * Re-export convenience API to create a client.
+ */
+export {
+	ClientConfig,
+	createClient,
+} from './api';
+
+/**
  * Re-export of all errors thrown by this module.
  */
 export {
