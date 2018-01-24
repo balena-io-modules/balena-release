@@ -114,7 +114,11 @@ export function find<T>(api: ApiClient, resource: string, options: ODataOptions)
 }
 
 export function get<T>(api: ApiClient, resource: string, id: number, expand?: Expand): Promise<T> {
-	return api.get({ resource, id, options: { $expand: expand } }).catch(wrapResponseError) as Promise<T>;
+	let options: any;
+	if (expand) {
+		options = { $expand: expand };
+	}
+	return api.get({ resource, id, options }).catch(wrapResponseError) as Promise<T>;
 }
 
 function wrapResponseError<E extends Error>(e: E): void {
