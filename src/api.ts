@@ -106,7 +106,7 @@ export function create(req: Request): Promise<Response> {
 			return createRelease(api, {
 				is_created_by__user: user.id,
 				belongs_to__application: application.id,
-				composition: JSON.stringify(req.composition),
+				composition: req.composition,
 				commit: req.commit,
 				status: 'running',
 				source: req.source,
