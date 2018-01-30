@@ -121,7 +121,6 @@ export function create(req: Request): Promise<Response> {
 					return getOrCreateService(api, {
 						application: application.id,
 						service_name: serviceName,
-						should_be_running: true,
 					})
 					.tap(service => {
 						// Create images and attach labels and env vars

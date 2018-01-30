@@ -10,7 +10,6 @@ import * as errors from './errors';
 
 interface ServiceAttributesBase {
 	service_name: string;
-	should_be_running: boolean;
 }
 
 interface ReleaseAttributesBase {
