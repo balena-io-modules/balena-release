@@ -1,6 +1,6 @@
 {
   "name": "resin-release",
-  "version": "1.1.3",
+  "version": "1.2.0",
   "description": "Create releases on Resin without the boilerplate",
   "main": "src/index",
   "types": "src/index.ts",
