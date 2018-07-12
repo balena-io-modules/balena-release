@@ -7,6 +7,8 @@ import * as compose from 'resin-compose-parse';
 import * as models from './models';
 import { Dict } from './types';
 
+const MAX_CONCURRENT_REQUESTS = 5;
+
 export interface ClientConfig {
 	/**
 	 * The host address of the API server to use, complete with the protocol,
@@ -134,6 +136,8 @@ export function create(req: Request): Promise<Response> {
 							res.serviceImages[serviceName] = img;
 						});
 					});
+				}, {
+					concurrency: MAX_CONCURRENT_REQUESTS
 				});
 			});
 		},
@@ -196,6 +200,8 @@ function createImage(
 					label_name: name,
 					value: (value || '').toString(),
 				});
+			}, {
+				concurrency: MAX_CONCURRENT_REQUESTS
 			});
 		})
 		.tap(releaseImage => {
@@ -205,6 +211,8 @@ function createImage(
 					name,
 					value: (value || '').toString(),
 				});
+			}, {
+				concurrency: MAX_CONCURRENT_REQUESTS
 			});
 		});
 	});
