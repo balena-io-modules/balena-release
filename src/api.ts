@@ -26,7 +26,7 @@ export interface ClientConfig {
 
 export function createClient(config: ClientConfig): ApiClient {
 	return new ApiClient({
-		apiPrefix: `${config.apiEndpoint}/v4/`,
+		apiPrefix: `${config.apiEndpoint}/v5/`,
 		passthrough: {
 			headers: {
 				Authorization: config.auth,
@@ -38,13 +38,13 @@ export function createClient(config: ClientConfig): ApiClient {
 export interface Request {
 	/**
 	 * An instance of PineJS, appropriately authenticated and configured for the
-	 * API server to use. The only compatible API version is v4, so make sure to
+	 * API server to use. The only compatible API version is v5, so make sure to
 	 * configure `apiPrefix` appropriately.
 	 *
 	 * ```
 	 * import Pine = require('pinejs-client');
 	 * const client = new Pine({
-	 *   apiPrefix: 'https://api.resin.io/v4',
+	 *   apiPrefix: 'https://api.resin.io/v5',
 	 *   passthrough: {
 	 *     headers: {
 	 *       Authorization: `Bearer ${authToken}`,
@@ -137,7 +137,7 @@ export function create(req: Request): Promise<Response> {
 						});
 					});
 				}, {
-					concurrency: MAX_CONCURRENT_REQUESTS
+					concurrency: MAX_CONCURRENT_REQUESTS,
 				});
 			});
 		},
@@ -201,7 +201,7 @@ function createImage(
 					value: (value || '').toString(),
 				});
 			}, {
-				concurrency: MAX_CONCURRENT_REQUESTS
+				concurrency: MAX_CONCURRENT_REQUESTS,
 			});
 		})
 		.tap(releaseImage => {
@@ -212,7 +212,7 @@ function createImage(
 					value: (value || '').toString(),
 				});
 			}, {
-				concurrency: MAX_CONCURRENT_REQUESTS
+				concurrency: MAX_CONCURRENT_REQUESTS,
 			});
 		});
 	});
