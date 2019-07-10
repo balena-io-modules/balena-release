@@ -2,7 +2,7 @@ import * as Promise from 'bluebird';
 import * as _ from 'lodash';
 
 import ApiClient = require('pinejs-client');
-import * as compose from 'resin-compose-parse';
+import { Composition } from 'resin-compose-parse';
 
 import * as models from './models';
 import { Dict } from './types';
@@ -76,7 +76,7 @@ export interface Request {
 	 *
 	 * See: https://github.com/resin-io-modules/resin-compose-parse
 	 */
-	composition: compose.Composition;
+	composition: Composition;
 
 	/**
 	 * An identifier for the deploy's origin.
@@ -184,8 +184,8 @@ function createRelease(api: ApiClient, body: models.ReleaseAttributes): Promise<
 function createImage(
 	api: ApiClient,
 	release: number,
-	labels: Dict<string>,
-	envvars: Dict<string>,
+	labels: Dict<string> | undefined,
+	envvars: Dict<string> | undefined,
 	body: models.ImageAttributes,
 ): Promise<models.ImageModel> {
 	return models.create<models.ImageModel, models.ImageAttributes>(api, 'image', body).tap(image => {
