@@ -2,10 +2,13 @@
   "name": "resin-release",
   "version": "1.2.2",
   "description": "Create releases on Resin without the boilerplate",
-  "main": "src/index",
-  "types": "src/index.ts",
+  "main": "build/index.js",
+  "types": "build/index.d.ts",
+  "files": [
+    "build/"
+  ],
   "scripts": {
-    "clean": "rimraf '{src,test,typings}/**/*.{js,js.map}'",
+    "clean": "rimraf build",
     "lint": "tslint '{src,test,typings}/**/*.ts'",
     "build": "npm run clean && tsc --project ./",
     "test": "npm run lint && ts-mocha --project ./ test/**/*.spec.ts",

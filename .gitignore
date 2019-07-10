@@ -1,6 +1,5 @@
 node_modules
 .DS_Store
 .vscode
-src/**/*.js
-test/**/*.js
+build/
 *.js.map

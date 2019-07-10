@@ -1,6 +1,6 @@
 import { assert, expect } from 'chai';
 
-import * as release from '../src';
+import * as release from '../build';
 
 describe('it', () => {
 	it('should compile :)', (done) => {

@@ -1,10 +1,12 @@
 {
   "compilerOptions": {
     "module": "commonjs",
+    "outDir": "./build",
     "noImplicitAny": true,
     "noUnusedParameters": true,
     "noUnusedLocals": true,
     "preserveConstEnums": true,
+    "declaration": true,
     "removeComments": true,
     "sourceMap": true,
     "strictNullChecks": true
