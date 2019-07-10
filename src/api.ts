@@ -12,7 +12,7 @@ const MAX_CONCURRENT_REQUESTS = 5;
 export interface ClientConfig {
 	/**
 	 * The host address of the API server to use, complete with the protocol,
-	 * eg. `https://api.resin.io`. This module will issue requests to v4 of
+	 * eg. `https://api.balena-cloud.com`. This module will issue requests to v4 of
 	 * the API.
 	 */
 	apiEndpoint: string;
@@ -44,7 +44,7 @@ export interface Request {
 	 * ```
 	 * import Pine = require('pinejs-client');
 	 * const client = new Pine({
-	 *   apiPrefix: 'https://api.resin.io/v5',
+	 *   apiPrefix: 'https://api.balena-cloud.com/v5',
 	 *   passthrough: {
 	 *     headers: {
 	 *       Authorization: `Bearer ${authToken}`,
@@ -74,7 +74,7 @@ export interface Request {
 	 * The composition to deploy; it should be a normalised structure whose schema
 	 * is defined in `resin-compose-parse`.
 	 *
-	 * See: https://github.com/resin-io-modules/resin-compose-parse
+	 * See: https://github.com/balena-io-modules/resin-compose-parse
 	 */
 	composition: Composition;
 

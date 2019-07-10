@@ -1,3 +1,3 @@
-# resin-release
+# balena-release
 
-Create releases on Resin without having to deal with the boilerplate.
+Create releases on balena without having to deal with the boilerplate.
