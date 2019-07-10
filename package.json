@@ -14,7 +14,7 @@
     "test:node": "npm run lint && ts-mocha --project ./ test/**/*.spec.ts",
     "test:ts-compatibility": "npx typescript@~3.4.0 --noEmit --project ./tsconfig.dist.json",
     "test": "npm run test:ts-compatibility && npm run test:node",
-    "prepublish": "npm run build && npm test"
+    "prepack": "npm run build"
   },
   "repository": {
     "type": "git",
