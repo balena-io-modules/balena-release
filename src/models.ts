@@ -91,14 +91,19 @@ export interface ReleaseImageModel extends ReleaseImageAttributesBase {
 // Helpers
 
 export function getOrCreate<T, U, V extends Filter>(api: ApiClient, resource: string, body: U, filter: V): Promise<T> {
-	return create(api, resource, body).catch(errors.ObjectDoesNotExistError, (_e) => {
-		return find(api, resource, { $filter: filter }).then((obj: T[]) => {
-			if (obj.length > 0) {
-				return obj[0];
-			}
-			throw new errors.ObjectDoesNotExistError();
-		});
-	}) as Promise<T>;
+	return create(api, resource, body).catch(
+		// TODO: Drop this in the next major release (using the /v6 endpoint)
+		// and only check for UniqueConstraintError
+		errors.ObjectDoesNotExistError,
+		errors.UniqueConstraintError,
+		() => {
+			return find(api, resource, { $filter: filter }).then((obj: T[]) => {
+				if (obj.length > 0) {
+					return obj[0];
+				}
+				throw new errors.ObjectDoesNotExistError();
+			});
+		}) as Promise<T>;
 }
 
 export function create<T, U>(api: ApiClient, resource: string, body: U): Promise<T> {
@@ -122,7 +127,7 @@ export function get<T>(api: ApiClient, resource: string, id: number, expand?: Ex
 }
 
 function wrapResponseError<E extends Error>(e: E): void {
-	const error: { statusCode?: number } = e as any;
+	const error: { statusCode?: number; message?: unknown } = e as any;
 	if (!error.statusCode) {
 		throw e;
 	}
@@ -133,6 +138,11 @@ function wrapResponseError<E extends Error>(e: E): void {
 		throw new errors.UnauthorisedError(e);
 	case 404:
 		throw new errors.ObjectDoesNotExistError(e);
+	case 409:
+		if (typeof error.message === 'string' && /unique/i.test(error.message)) {
+			throw new errors.UniqueConstraintError(e);
+		}
+		throw new errors.ConflictError(e, error.statusCode);
 	case 500:
 		throw new errors.ServerError(e);
 	default:
