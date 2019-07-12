@@ -2,7 +2,7 @@ import * as Promise from 'bluebird';
 
 import ApiClient = require('pinejs-client');
 import { Expand, Filter, ODataOptions } from 'pinejs-client/core';
-import * as compose from 'resin-compose-parse';
+import { Composition } from 'resin-compose-parse';
 
 import * as errors from './errors';
 
@@ -13,7 +13,7 @@ interface ServiceAttributesBase {
 }
 
 interface ReleaseAttributesBase {
-	composition: compose.Composition;
+	composition: Composition;
 	commit: string;
 	status: string;
 	source: string;

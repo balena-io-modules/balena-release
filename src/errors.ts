@@ -1,4 +1,4 @@
-import TypedError = require('typed-error');
+import { TypedError } from 'typed-error';
 
 export class ObjectDoesNotExistError extends TypedError {}
 export class UnauthorisedError extends TypedError {}

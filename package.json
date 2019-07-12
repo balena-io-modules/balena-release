@@ -1,26 +1,31 @@
 {
-  "name": "resin-release",
+  "name": "balena-release",
   "version": "1.2.2",
-  "description": "Create releases on Resin without the boilerplate",
-  "main": "src/index",
-  "types": "src/index.ts",
+  "description": "Create releases on balena without the boilerplate",
+  "main": "build/index.js",
+  "types": "build/index.d.ts",
+  "files": [
+    "build/"
+  ],
   "scripts": {
-    "clean": "rimraf '{src,test,typings}/**/*.{js,js.map}'",
+    "clean": "rimraf build",
     "lint": "tslint '{src,test,typings}/**/*.ts'",
-    "build": "npm run clean && tsc --project ./",
-    "test": "npm run lint && ts-mocha --project ./ test/**/*.spec.ts",
-    "prepublish": "npm run build && npm test"
+    "build": "npm run clean && npm run lint && tsc --project ./",
+    "test:node": "ts-mocha --project ./ test/**/*.spec.ts",
+    "test:ts-compatibility": "npx typescript@~3.4.0 --noEmit --project ./tsconfig.dist.json",
+    "test": "npm run build && npm run test:ts-compatibility && npm run test:node",
+    "prepack": "npm run build"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/resin-io-modules/resin-release.git"
+    "url": "git+https://github.com/balena-io-modules/balena-release.git"
   },
-  "author": "Resin.io",
+  "author": "balena.io",
   "license": "Apache-2.0",
   "bugs": {
-    "url": "https://github.com/resin-io-modules/resin-release/issues"
+    "url": "https://github.com/balena-io-modules/balena-release/issues"
   },
-  "homepage": "https://github.com/resin-io-modules/resin-release#readme",
+  "homepage": "https://github.com/balena-io-modules/balena-release#readme",
   "dependencies": {
     "@types/bluebird": "^3.5.18",
     "@types/lodash": "^4.14.87",
@@ -29,8 +34,8 @@
     "bluebird": "^3.5.1",
     "lodash": "^4.17.4",
     "pinejs-client": "^4.2.3",
-    "resin-compose-parse": "^1.0.0",
-    "typed-error": "^2.0.0"
+    "resin-compose-parse": "^2.0.0",
+    "typed-error": "^3.0.0"
   },
   "devDependencies": {
     "@types/chai": "^4.0.8",
@@ -40,6 +45,6 @@
     "rimraf": "^2.6.2",
     "ts-mocha": "^1.0.3",
     "tslint": "^5.8.0",
-    "typescript": "^2.6.2"
+    "typescript": "^3.4.3"
   }
 }
