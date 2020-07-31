@@ -13,7 +13,7 @@
     "lint": "balena-lint --typescript src test",
     "lint-fix": "balena-lint --typescript --fix src test",
     "test:node": "mocha -r ts-node/register --reporter spec test/**/*.spec.ts",
-    "test:ts-compatibility": "npx typescript@~3.4.0 --noEmit --project ./tsconfig.dist.json",
+    "test:ts-compatibility": "npx typescript@~3.9.0 --noEmit --project ./tsconfig.dist.json",
     "test": "npm run build && npm run test:ts-compatibility && npm run test:node",
     "prepack": "npm run build"
   },
