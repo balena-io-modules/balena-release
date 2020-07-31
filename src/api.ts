@@ -1,9 +1,6 @@
 import * as Bluebird from 'bluebird';
-import * as _ from 'lodash';
-
 import { PinejsClientRequest } from 'pinejs-client-request';
 import { Composition } from 'resin-compose-parse';
-
 import * as models from './models';
 import { Dict } from './types';
 
@@ -120,7 +117,7 @@ export async function create(req: Request): Promise<Response> {
 
 	// Create services and associated image, labels and env vars
 	await Bluebird.map(
-		_.toPairs(req.composition.services),
+		Object.entries(req.composition.services),
 		async ([serviceName, serviceDescription]) => {
 			const service = await getOrCreateService(api, {
 				application: application.id,
@@ -223,33 +220,37 @@ async function createImage(
 		image: image.id,
 	});
 
-	await Bluebird.map(
-		_.toPairs(labels),
-		([name, value]) => {
-			return models.create(api, 'image_label', {
-				release_image: releaseImage.id,
-				label_name: name,
-				value: (value || '').toString(),
-			});
-		},
-		{
-			concurrency: MAX_CONCURRENT_REQUESTS,
-		},
-	);
+	if (labels) {
+		await Bluebird.map(
+			Object.entries(labels),
+			([name, value]) => {
+				return models.create(api, 'image_label', {
+					release_image: releaseImage.id,
+					label_name: name,
+					value: (value || '').toString(),
+				});
+			},
+			{
+				concurrency: MAX_CONCURRENT_REQUESTS,
+			},
+		);
+	}
 
-	await Bluebird.map(
-		_.toPairs(envvars),
-		([name, value]) => {
-			return models.create(api, 'image_environment_variable', {
-				release_image: releaseImage.id,
-				name,
-				value: (value || '').toString(),
-			});
-		},
-		{
-			concurrency: MAX_CONCURRENT_REQUESTS,
-		},
-	);
+	if (envvars) {
+		await Bluebird.map(
+			Object.entries(envvars),
+			([name, value]) => {
+				return models.create(api, 'image_environment_variable', {
+					release_image: releaseImage.id,
+					name,
+					value: (value || '').toString(),
+				});
+			},
+			{
+				concurrency: MAX_CONCURRENT_REQUESTS,
+			},
+		);
+	}
 
 	return image;
 }
