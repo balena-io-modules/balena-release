@@ -1,5 +1,5 @@
 import * as Promise from 'bluebird';
-import * as _ from 'lodash';
+import toPairs = require('lodash/toPairs');
 
 import ApiClient = require('pinejs-client');
 import { Composition } from 'resin-compose-parse';
@@ -120,7 +120,7 @@ export function create(req: Request): Promise<Response> {
 				.tap((res) => {
 					// Create services and associated image, labels and env vars
 					return Promise.map(
-						_.toPairs(req.composition.services),
+						toPairs(req.composition.services),
 						([serviceName, serviceDescription]) => {
 							return getOrCreateService(api, {
 								application: application.id,
@@ -219,7 +219,7 @@ function createImage(
 				)
 				.tap((releaseImage) => {
 					return Promise.map(
-						_.toPairs(labels),
+						toPairs(labels),
 						([name, value]) => {
 							return models.create(api, 'image_label', {
 								release_image: releaseImage.id,
@@ -234,7 +234,7 @@ function createImage(
 				})
 				.tap((releaseImage) => {
 					return Promise.map(
-						_.toPairs(envvars),
+						toPairs(envvars),
 						([name, value]) => {
 							return models.create(api, 'image_environment_variable', {
 								release_image: releaseImage.id,
