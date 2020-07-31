@@ -21,6 +21,7 @@ interface ReleaseAttributesBase {
 	end_timestamp?: Date;
 }
 
+// tslint:disable-next-line no-empty-interface
 interface ReleaseImageAttributesBase {
 	// empty
 }
@@ -90,40 +91,70 @@ export interface ReleaseImageModel extends ReleaseImageAttributesBase {
 
 // Helpers
 
-export function getOrCreate<T, U, V extends Filter>(api: ApiClient, resource: string, body: U, filter: V): Promise<T> {
+export function getOrCreate<T, U, V extends Filter>(
+	api: ApiClient,
+	resource: string,
+	body: U,
+	filter: V,
+): Promise<T> {
 	return create(api, resource, body).catch(
 		// TODO: Drop this in the next major release (using the /v6 endpoint)
 		// and only check for UniqueConstraintError
 		errors.ObjectDoesNotExistError,
 		errors.UniqueConstraintError,
 		() => {
-			return find(api, resource, { $filter: filter }).then((obj: T[]) => {
+			return find<T>(api, resource, { $filter: filter }).then((obj) => {
 				if (obj.length > 0) {
 					return obj[0];
 				}
 				throw new errors.ObjectDoesNotExistError();
 			});
-		}) as Promise<T>;
+		},
+	) as Promise<T>;
 }
 
-export function create<T, U>(api: ApiClient, resource: string, body: U): Promise<T> {
+export function create<T, U>(
+	api: ApiClient,
+	resource: string,
+	body: U,
+): Promise<T> {
 	return api.post({ resource, body }).catch(wrapResponseError) as Promise<T>;
 }
 
-export function update<T, U>(api: ApiClient, resource: string, id: number, body: U): Promise<T> {
-	return api.patch({ resource, id, body }).catch(wrapResponseError) as Promise<T>;
+export function update<T, U>(
+	api: ApiClient,
+	resource: string,
+	id: number,
+	body: U,
+): Promise<T> {
+	return api.patch({ resource, id, body }).catch(wrapResponseError) as Promise<
+		T
+	>;
 }
 
-export function find<T>(api: ApiClient, resource: string, options: ODataOptions): Promise<T[]> {
-	return api.get({ resource, options }).catch(wrapResponseError) as Promise<T[]>;
+export function find<T>(
+	api: ApiClient,
+	resource: string,
+	options: ODataOptions,
+): Promise<T[]> {
+	return api.get({ resource, options }).catch(wrapResponseError) as Promise<
+		T[]
+	>;
 }
 
-export function get<T>(api: ApiClient, resource: string, id: number, expand?: Expand): Promise<T> {
+export function get<T>(
+	api: ApiClient,
+	resource: string,
+	id: number,
+	expand?: Expand,
+): Promise<T> {
 	let options: any;
 	if (expand) {
 		options = { $expand: expand };
 	}
-	return api.get({ resource, id, options }).catch(wrapResponseError) as Promise<T>;
+	return api.get({ resource, id, options }).catch(wrapResponseError) as Promise<
+		T
+	>;
 }
 
 function wrapResponseError<E extends Error>(e: E): void {
@@ -132,20 +163,20 @@ function wrapResponseError<E extends Error>(e: E): void {
 		throw e;
 	}
 	switch (error.statusCode) {
-	case 400:
-		throw new errors.BadRequestError(e);
-	case 401:
-		throw new errors.UnauthorisedError(e);
-	case 404:
-		throw new errors.ObjectDoesNotExistError(e);
-	case 409:
-		if (typeof error.message === 'string' && /unique/i.test(error.message)) {
-			throw new errors.UniqueConstraintError(e);
-		}
-		throw new errors.ConflictError(e, error.statusCode);
-	case 500:
-		throw new errors.ServerError(e);
-	default:
-		throw new errors.HttpResponseError(e, error.statusCode);
+		case 400:
+			throw new errors.BadRequestError(e);
+		case 401:
+			throw new errors.UnauthorisedError(e);
+		case 404:
+			throw new errors.ObjectDoesNotExistError(e);
+		case 409:
+			if (typeof error.message === 'string' && /unique/i.test(error.message)) {
+				throw new errors.UniqueConstraintError(e);
+			}
+			throw new errors.ConflictError(e, error.statusCode);
+		case 500:
+			throw new errors.ServerError(e);
+		default:
+			throw new errors.HttpResponseError(e, error.statusCode);
 	}
 }
