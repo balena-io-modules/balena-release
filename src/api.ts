@@ -1,7 +1,7 @@
 import * as Bluebird from 'bluebird';
 import * as _ from 'lodash';
 
-import ApiClient = require('pinejs-client');
+import { PinejsClientRequest } from 'pinejs-client-request';
 import { Composition } from 'resin-compose-parse';
 
 import * as models from './models';
@@ -24,8 +24,8 @@ export interface ClientConfig {
 	auth: string;
 }
 
-export function createClient(config: ClientConfig): ApiClient {
-	return new ApiClient({
+export function createClient(config: ClientConfig): PinejsClientRequest {
+	return new PinejsClientRequest({
 		apiPrefix: `${config.apiEndpoint}/v6/`,
 		passthrough: {
 			headers: {
@@ -42,7 +42,7 @@ export interface Request {
 	 * configure `apiPrefix` appropriately.
 	 *
 	 * ```
-	 * import Pine = require('pinejs-client');
+	 * import Pine = require('pinejs-client-request');
 	 * const client = new Pine({
 	 *   apiPrefix: 'https://api.balena-cloud.com/v5',
 	 *   passthrough: {
@@ -56,7 +56,7 @@ export interface Request {
 	 * You can use the `createClient` convenience function of this module to create
 	 * a client that can reused across requests.
 	 */
-	client: ApiClient;
+	client: PinejsClientRequest;
 
 	/**
 	 * The ID of the user the release should belong to. The user authenticated via `client`
@@ -154,7 +154,7 @@ export async function create(req: Request): Promise<Response> {
 }
 
 export async function updateRelease(
-	api: ApiClient,
+	api: PinejsClientRequest,
 	id: number,
 	body: Partial<models.ReleaseAttributes>,
 ): Promise<models.ReleaseModel> {
@@ -162,7 +162,7 @@ export async function updateRelease(
 }
 
 export async function updateImage(
-	api: ApiClient,
+	api: PinejsClientRequest,
 	id: number,
 	body: Partial<models.ImageAttributes>,
 ): Promise<models.ImageModel> {
@@ -171,19 +171,22 @@ export async function updateImage(
 
 // Helpers
 
-async function getUser(api: ApiClient, id: number): Promise<models.UserModel> {
+async function getUser(
+	api: PinejsClientRequest,
+	id: number,
+): Promise<models.UserModel> {
 	return models.get(api, 'user', id);
 }
 
 async function getApplication(
-	api: ApiClient,
+	api: PinejsClientRequest,
 	id: number,
 ): Promise<models.ApplicationModel> {
 	return models.get(api, 'application', id);
 }
 
 async function getOrCreateService(
-	api: ApiClient,
+	api: PinejsClientRequest,
 	body: models.ServiceAttributes,
 ): Promise<models.ServiceModel> {
 	return models.getOrCreate(api, 'service', body, {
@@ -193,14 +196,14 @@ async function getOrCreateService(
 }
 
 async function createRelease(
-	api: ApiClient,
+	api: PinejsClientRequest,
 	body: models.ReleaseAttributes,
 ): Promise<models.ReleaseModel> {
 	return models.create(api, 'release', body);
 }
 
 async function createImage(
-	api: ApiClient,
+	api: PinejsClientRequest,
 	release: number,
 	labels: Dict<string> | undefined,
 	envvars: Dict<string> | undefined,
