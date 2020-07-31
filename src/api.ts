@@ -114,32 +114,40 @@ export function create(req: Request): Promise<Response> {
 				source: req.source,
 				start_timestamp: new Date(),
 			})
-			.then(release => {
-				return { release, serviceImages: {} } as Response;
-			})
-			.tap(res => {
-				// Create services and associated image, labels and env vars
-				return Promise.map(_.toPairs(req.composition.services), ([ serviceName, serviceDescription ]) => {
-					return getOrCreateService(api, {
-						application: application.id,
-						service_name: serviceName,
-					})
-					.tap(service => {
-						// Create images and attach labels and env vars
-						return createImage(api, res.release.id, serviceDescription.labels, serviceDescription.environment, {
-							is_a_build_of__service: service.id,
-							status: 'running',
-							start_timestamp: new Date(),
-						})
-						.tap(img => {
-							// Amend response with image details for the service
-							res.serviceImages[serviceName] = img;
-						});
-					});
-				}, {
-					concurrency: MAX_CONCURRENT_REQUESTS,
+				.then((release) => {
+					return { release, serviceImages: {} } as Response;
+				})
+				.tap((res) => {
+					// Create services and associated image, labels and env vars
+					return Promise.map(
+						_.toPairs(req.composition.services),
+						([serviceName, serviceDescription]) => {
+							return getOrCreateService(api, {
+								application: application.id,
+								service_name: serviceName,
+							}).tap((service) => {
+								// Create images and attach labels and env vars
+								return createImage(
+									api,
+									res.release.id,
+									serviceDescription.labels,
+									serviceDescription.environment,
+									{
+										is_a_build_of__service: service.id,
+										status: 'running',
+										start_timestamp: new Date(),
+									},
+								).tap((img) => {
+									// Amend response with image details for the service
+									res.serviceImages[serviceName] = img;
+								});
+							});
+						},
+						{
+							concurrency: MAX_CONCURRENT_REQUESTS,
+						},
+					);
 				});
-			});
 		},
 	);
 }
@@ -166,18 +174,27 @@ function getUser(api: ApiClient, id: number): Promise<models.UserModel> {
 	return models.get(api, 'user', id);
 }
 
-function getApplication(api: ApiClient, id: number): Promise<models.ApplicationModel> {
+function getApplication(
+	api: ApiClient,
+	id: number,
+): Promise<models.ApplicationModel> {
 	return models.get(api, 'application', id);
 }
 
-function getOrCreateService(api: ApiClient, body: models.ServiceAttributes): Promise<models.ServiceModel> {
+function getOrCreateService(
+	api: ApiClient,
+	body: models.ServiceAttributes,
+): Promise<models.ServiceModel> {
 	return models.getOrCreate(api, 'service', body, {
 		application: body.application,
 		service_name: body.service_name,
 	});
 }
 
-function createRelease(api: ApiClient, body: models.ReleaseAttributes): Promise<models.ReleaseModel> {
+function createRelease(
+	api: ApiClient,
+	body: models.ReleaseAttributes,
+): Promise<models.ReleaseModel> {
 	return models.create(api, 'release', body);
 }
 
@@ -188,32 +205,47 @@ function createImage(
 	envvars: Dict<string> | undefined,
 	body: models.ImageAttributes,
 ): Promise<models.ImageModel> {
-	return models.create<models.ImageModel, models.ImageAttributes>(api, 'image', body).tap(image => {
-		return models.create<models.ReleaseImageModel, models.ReleaseImageAttributes>(api, 'image__is_part_of__release', {
-			is_part_of__release: release,
-			image: image.id,
-		})
-		.tap(releaseImage => {
-			return Promise.map(_.toPairs(labels), ([ name, value ]) => {
-				return models.create(api, 'image_label', {
-					release_image: releaseImage.id,
-					label_name: name,
-					value: (value || '').toString(),
+	return models
+		.create<models.ImageModel, models.ImageAttributes>(api, 'image', body)
+		.tap((image) => {
+			return models
+				.create<models.ReleaseImageModel, models.ReleaseImageAttributes>(
+					api,
+					'image__is_part_of__release',
+					{
+						is_part_of__release: release,
+						image: image.id,
+					},
+				)
+				.tap((releaseImage) => {
+					return Promise.map(
+						_.toPairs(labels),
+						([name, value]) => {
+							return models.create(api, 'image_label', {
+								release_image: releaseImage.id,
+								label_name: name,
+								value: (value || '').toString(),
+							});
+						},
+						{
+							concurrency: MAX_CONCURRENT_REQUESTS,
+						},
+					);
+				})
+				.tap((releaseImage) => {
+					return Promise.map(
+						_.toPairs(envvars),
+						([name, value]) => {
+							return models.create(api, 'image_environment_variable', {
+								release_image: releaseImage.id,
+								name,
+								value: (value || '').toString(),
+							});
+						},
+						{
+							concurrency: MAX_CONCURRENT_REQUESTS,
+						},
+					);
 				});
-			}, {
-				concurrency: MAX_CONCURRENT_REQUESTS,
-			});
-		})
-		.tap(releaseImage => {
-			return Promise.map(_.toPairs(envvars), ([ name, value ]) => {
-				return models.create(api, 'image_environment_variable', {
-					release_image: releaseImage.id,
-					name,
-					value: (value || '').toString(),
-				});
-			}, {
-				concurrency: MAX_CONCURRENT_REQUESTS,
-			});
 		});
-	});
 }
