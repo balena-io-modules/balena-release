@@ -1,5 +1,3 @@
-import * as Promise from 'bluebird';
-
 import ApiClient = require('pinejs-client');
 import { Expand, Filter, ODataOptions } from 'pinejs-client/core';
 import { Composition } from 'resin-compose-parse';
