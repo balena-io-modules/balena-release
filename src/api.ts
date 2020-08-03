@@ -1,9 +1,6 @@
-import * as Promise from 'bluebird';
-import * as _ from 'lodash';
-
-import ApiClient = require('pinejs-client');
+import * as Bluebird from 'bluebird';
+import { PinejsClientRequest } from 'pinejs-client-request';
 import { Composition } from 'resin-compose-parse';
-
 import * as models from './models';
 import { Dict } from './types';
 
@@ -24,9 +21,9 @@ export interface ClientConfig {
 	auth: string;
 }
 
-export function createClient(config: ClientConfig): ApiClient {
-	return new ApiClient({
-		apiPrefix: `${config.apiEndpoint}/v5/`,
+export function createClient(config: ClientConfig): PinejsClientRequest {
+	return new PinejsClientRequest({
+		apiPrefix: `${config.apiEndpoint}/v6/`,
 		passthrough: {
 			headers: {
 				Authorization: config.auth,
@@ -42,7 +39,7 @@ export interface Request {
 	 * configure `apiPrefix` appropriately.
 	 *
 	 * ```
-	 * import Pine = require('pinejs-client');
+	 * import Pine = require('pinejs-client-request');
 	 * const client = new Pine({
 	 *   apiPrefix: 'https://api.balena-cloud.com/v5',
 	 *   passthrough: {
@@ -56,7 +53,7 @@ export interface Request {
 	 * You can use the `createClient` convenience function of this module to create
 	 * a client that can reused across requests.
 	 */
-	client: ApiClient;
+	client: PinejsClientRequest;
 
 	/**
 	 * The ID of the user the release should belong to. The user authenticated via `client`
@@ -97,71 +94,72 @@ export interface Response {
 /**
  * This is the entry point for deploying a docker-compose.yml to devices.
  */
-export function create(req: Request): Promise<Response> {
+export async function create(req: Request): Promise<Response> {
 	const api = req.client;
 
 	// Ensure that the user and app exist and the user has access to them.
-	return Promise.join(
+	const [user, application] = await Promise.all([
 		getUser(api, req.user),
 		getApplication(api, req.application),
-		(user, application) => {
-			return createRelease(api, {
-				is_created_by__user: user.id,
-				belongs_to__application: application.id,
-				composition: req.composition,
-				commit: req.commit,
-				status: 'running',
-				source: req.source,
-				start_timestamp: new Date(),
-			})
-				.then((release) => {
-					return { release, serviceImages: {} } as Response;
-				})
-				.tap((res) => {
-					// Create services and associated image, labels and env vars
-					return Promise.map(
-						_.toPairs(req.composition.services),
-						([serviceName, serviceDescription]) => {
-							return getOrCreateService(api, {
-								application: application.id,
-								service_name: serviceName,
-							}).tap((service) => {
-								// Create images and attach labels and env vars
-								return createImage(
-									api,
-									res.release.id,
-									serviceDescription.labels,
-									serviceDescription.environment,
-									{
-										is_a_build_of__service: service.id,
-										status: 'running',
-										start_timestamp: new Date(),
-									},
-								).tap((img) => {
-									// Amend response with image details for the service
-									res.serviceImages[serviceName] = img;
-								});
-							});
-						},
-						{
-							concurrency: MAX_CONCURRENT_REQUESTS,
-						},
-					);
-				});
+	]);
+
+	const release = await createRelease(api, {
+		is_created_by__user: user.id,
+		belongs_to__application: application.id,
+		composition: req.composition,
+		commit: req.commit,
+		status: 'running',
+		source: req.source,
+		start_timestamp: new Date(),
+	});
+
+	const res = { release, serviceImages: {} } as Response;
+
+	// Create services and associated image, labels and env vars
+	await Bluebird.map(
+		Object.entries(req.composition.services),
+		async ([serviceName, serviceDescription]) => {
+			const service = await getOrCreateService(api, {
+				application: application.id,
+				service_name: serviceName,
+			});
+
+			// Create images and attach labels and env vars
+			const img = await createImage(
+				api,
+				res.release.id,
+				serviceDescription.labels,
+				serviceDescription.environment,
+				{
+					is_a_build_of__service: service.id,
+					status: 'running',
+					start_timestamp: new Date(),
+				},
+			);
+
+			// Amend response with image details for the service
+			res.serviceImages[serviceName] = img;
+
+			return service;
+		},
+		{
+			concurrency: MAX_CONCURRENT_REQUESTS,
 		},
 	);
+
+	return res;
 }
 
-export function updateRelease(
-	api: ApiClient,
+export async function updateRelease(
+	api: PinejsClientRequest,
 	id: number,
 	body: Partial<models.ReleaseAttributes>,
 ): Promise<models.ReleaseModel> {
 	return models.update(api, 'release', id, body);
 }
 
-export function updateImage(
-	api: ApiClient,
+export async function updateImage(
+	api: PinejsClientRequest,
 	id: number,
 	body: Partial<models.ImageAttributes>,
 ): Promise<models.ImageModel> {
@@ -170,19 +168,22 @@ export function updateImage(
 
 // Helpers
 
-function getUser(api: ApiClient, id: number): Promise<models.UserModel> {
+async function getUser(
+	api: PinejsClientRequest,
+	id: number,
+): Promise<models.UserModel> {
 	return models.get(api, 'user', id);
 }
 
-function getApplication(
-	api: ApiClient,
+async function getApplication(
+	api: PinejsClientRequest,
 	id: number,
 ): Promise<models.ApplicationModel> {
 	return models.get(api, 'application', id);
 }
 
-function getOrCreateService(
-	api: ApiClient,
+async function getOrCreateService(
+	api: PinejsClientRequest,
 	body: models.ServiceAttributes,
 ): Promise<models.ServiceModel> {
 	return models.getOrCreate(api, 'service', body, {
@@ -191,61 +192,65 @@ function getOrCreateService(
 	});
 }
 
-function createRelease(
-	api: ApiClient,
+async function createRelease(
+	api: PinejsClientRequest,
 	body: models.ReleaseAttributes,
 ): Promise<models.ReleaseModel> {
 	return models.create(api, 'release', body);
 }
 
-function createImage(
-	api: ApiClient,
+async function createImage(
+	api: PinejsClientRequest,
 	release: number,
 	labels: Dict<string> | undefined,
 	envvars: Dict<string> | undefined,
 	body: models.ImageAttributes,
 ): Promise<models.ImageModel> {
-	return models
-		.create<models.ImageModel, models.ImageAttributes>(api, 'image', body)
-		.tap((image) => {
-			return models
-				.create<models.ReleaseImageModel, models.ReleaseImageAttributes>(
-					api,
-					'image__is_part_of__release',
-					{
-						is_part_of__release: release,
-						image: image.id,
-					},
-				)
-				.tap((releaseImage) => {
-					return Promise.map(
-						_.toPairs(labels),
-						([name, value]) => {
-							return models.create(api, 'image_label', {
-								release_image: releaseImage.id,
-								label_name: name,
-								value: (value || '').toString(),
-							});
-						},
-						{
-							concurrency: MAX_CONCURRENT_REQUESTS,
-						},
-					);
-				})
-				.tap((releaseImage) => {
-					return Promise.map(
-						_.toPairs(envvars),
-						([name, value]) => {
-							return models.create(api, 'image_environment_variable', {
-								release_image: releaseImage.id,
-								name,
-								value: (value || '').toString(),
-							});
-						},
-						{
-							concurrency: MAX_CONCURRENT_REQUESTS,
-						},
-					);
+	const image = await models.create<models.ImageModel, models.ImageAttributes>(
+		api,
+		'image',
+		body,
+	);
+
+	const releaseImage = await models.create<
+		models.ReleaseImageModel,
+		models.ReleaseImageAttributes
+	>(api, 'image__is_part_of__release', {
+		is_part_of__release: release,
+		image: image.id,
+	});
+
+	if (labels) {
+		await Bluebird.map(
+			Object.entries(labels),
+			([name, value]) => {
+				return models.create(api, 'image_label', {
+					release_image: releaseImage.id,
+					label_name: name,
+					value: (value || '').toString(),
 				});
-		});
+			},
+			{
+				concurrency: MAX_CONCURRENT_REQUESTS,
+			},
+		);
+	}
+
+	if (envvars) {
+		await Bluebird.map(
+			Object.entries(envvars),
+			([name, value]) => {
+				return models.create(api, 'image_environment_variable', {
+					release_image: releaseImage.id,
+					name,
+					value: (value || '').toString(),
+				});
+			},
+			{
+				concurrency: MAX_CONCURRENT_REQUESTS,
+			},
+		);
+	}
+
+	return image;
 }

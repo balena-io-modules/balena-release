@@ -1,8 +1,6 @@
-import * as Promise from 'bluebird';
-
-import ApiClient = require('pinejs-client');
-import { Expand, Filter, ODataOptions } from 'pinejs-client/core';
-import { Composition } from 'resin-compose-parse';
+import type { PinejsClientRequest } from 'pinejs-client-request';
+import type { Expand, Filter, ODataOptions } from 'pinejs-client-core';
+import type { Composition } from 'resin-compose-parse';
 
 import * as errors from './errors';
 
@@ -92,29 +90,26 @@ export interface ReleaseImageModel extends ReleaseImageAttributesBase {
 // Helpers
 
 export function getOrCreate<T, U, V extends Filter>(
-	api: ApiClient,
+	api: PinejsClientRequest,
 	resource: string,
 	body: U,
 	filter: V,
 ): Promise<T> {
-	return create(api, resource, body).catch(
-		// TODO: Drop this in the next major release (using the /v6 endpoint)
-		// and only check for UniqueConstraintError
-		errors.ObjectDoesNotExistError,
-		errors.UniqueConstraintError,
-		() => {
+	return create(api, resource, body).catch((error) => {
+		if (error instanceof errors.UniqueConstraintError) {
 			return find<T>(api, resource, { $filter: filter }).then((obj) => {
 				if (obj.length > 0) {
 					return obj[0];
 				}
 				throw new errors.ObjectDoesNotExistError();
 			});
-		},
-	) as Promise<T>;
+		}
+		throw error;
+	}) as Promise<T>;
 }
 
 export function create<T, U>(
-	api: ApiClient,
+	api: PinejsClientRequest,
 	resource: string,
 	body: U,
 ): Promise<T> {
@@ -122,7 +117,7 @@ export function create<T, U>(
 }
 
 export function update<T, U>(
-	api: ApiClient,
+	api: PinejsClientRequest,
 	resource: string,
 	id: number,
 	body: U,
@@ -133,7 +128,7 @@ export function update<T, U>(
 }
 
 export function find<T>(
-	api: ApiClient,
+	api: PinejsClientRequest,
 	resource: string,
 	options: ODataOptions,
 ): Promise<T[]> {
@@ -143,7 +138,7 @@ export function find<T>(
 }
 
 export function get<T>(
-	api: ApiClient,
+	api: PinejsClientRequest,
 	resource: string,
 	id: number,
 	expand?: Expand,

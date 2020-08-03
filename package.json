@@ -13,7 +13,7 @@
     "lint": "balena-lint --typescript src test",
     "lint-fix": "balena-lint --typescript --fix src test",
     "test:node": "mocha -r ts-node/register --reporter spec test/**/*.spec.ts",
-    "test:ts-compatibility": "npx typescript@~3.4.0 --noEmit --project ./tsconfig.dist.json",
+    "test:ts-compatibility": "npx typescript@~3.9.0 --noEmit --project ./tsconfig.dist.json",
     "test": "npm run build && npm run test:ts-compatibility && npm run test:node",
     "prepack": "npm run build"
   },
@@ -23,18 +23,19 @@
   },
   "author": "balena.io",
   "license": "Apache-2.0",
+  "engines": {
+    "node": ">=10.0.0"
+  },
   "bugs": {
     "url": "https://github.com/balena-io-modules/balena-release/issues"
   },
   "homepage": "https://github.com/balena-io-modules/balena-release#readme",
   "dependencies": {
     "@types/bluebird": "^3.5.18",
-    "@types/lodash": "^4.14.87",
     "@types/node": "^8.0.55",
     "@types/request": "^2.0.8",
     "bluebird": "^3.5.1",
-    "lodash": "^4.17.4",
-    "pinejs-client": "^4.2.3",
+    "pinejs-client-request": "^7.1.0",
     "resin-compose-parse": "^2.0.0",
     "typed-error": "^3.0.0"
   },
