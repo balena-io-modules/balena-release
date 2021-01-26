@@ -17,6 +17,7 @@ interface ReleaseAttributesBase {
 	source: string;
 	start_timestamp: Date;
 	end_timestamp?: Date;
+	release_version?: string;
 }
 
 // tslint:disable-next-line no-empty-interface
@@ -122,9 +123,9 @@ export function update<T, U>(
 	id: number,
 	body: U,
 ): Promise<T> {
-	return api.patch({ resource, id, body }).catch(wrapResponseError) as Promise<
-		T
-	>;
+	return api
+		.patch({ resource, id, body })
+		.catch(wrapResponseError) as Promise<T>;
 }
 
 export function find<T>(
@@ -147,9 +148,9 @@ export function get<T>(
 	if (expand) {
 		options = { $expand: expand };
 	}
-	return api.get({ resource, id, options }).catch(wrapResponseError) as Promise<
-		T
-	>;
+	return api
+		.get({ resource, id, options })
+		.catch(wrapResponseError) as Promise<T>;
 }
 
 function wrapResponseError<E extends Error>(e: E): void {

@@ -84,6 +84,11 @@ export interface Request {
 	 * The external identifier for the release.
 	 */
 	commit: string;
+
+	/**
+	 * The version of the release.
+	 */
+	release_version?: string;
 }
 
 export interface Response {
@@ -111,6 +116,7 @@ export async function create(req: Request): Promise<Response> {
 		status: 'running',
 		source: req.source,
 		start_timestamp: new Date(),
+		release_version: req.release_version,
 	});
 
 	const res = { release, serviceImages: {} } as Response;
