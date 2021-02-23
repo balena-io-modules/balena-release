@@ -84,6 +84,11 @@ export interface Request {
 	 * The external identifier for the release.
 	 */
 	commit: string;
+
+	/**
+	 * TODO
+	 */
+	contract: string;
 }
 
 export interface Response {
@@ -111,6 +116,7 @@ export async function create(req: Request): Promise<Response> {
 		status: 'running',
 		source: req.source,
 		start_timestamp: new Date(),
+		contract: req.contract,
 	});
 
 	const res = { release, serviceImages: {} } as Response;
