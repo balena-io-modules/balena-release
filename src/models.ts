@@ -141,12 +141,12 @@ export function get<T>(
 	id: number,
 	expand?: Expand,
 ): Promise<T> {
-	let options: any;
-	if (expand) {
-		options = { $expand: expand };
-	}
 	return api
-		.get({ resource, id, options })
+		.get({
+			resource,
+			id,
+			options: expand ? { $expand: expand } : undefined,
+		})
 		.catch(wrapResponseError) as Promise<T>;
 }
 
