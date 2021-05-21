@@ -154,7 +154,7 @@ export async function updateRelease(
 	api: PinejsClientRequest,
 	id: number,
 	body: Partial<models.ReleaseAttributes>,
-): Promise<models.ReleaseModel> {
+): Promise<void> {
 	return models.update(api, 'release', id, body);
 }
 
@@ -162,7 +162,7 @@ export async function updateImage(
 	api: PinejsClientRequest,
 	id: number,
 	body: Partial<models.ImageAttributes>,
-): Promise<models.ImageModel> {
+): Promise<void> {
 	return models.update(api, 'image', id, body);
 }
 
