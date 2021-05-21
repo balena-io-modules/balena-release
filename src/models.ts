@@ -116,15 +116,13 @@ export function create<T, U>(
 	return api.post({ resource, body }).catch(wrapResponseError) as Promise<T>;
 }
 
-export function update<T, U>(
+export function update<T>(
 	api: PinejsClientRequest,
 	resource: string,
 	id: number,
-	body: U,
-): Promise<T> {
-	return api
-		.patch({ resource, id, body })
-		.catch(wrapResponseError) as Promise<T>;
+	body: T,
+): Promise<void> {
+	return api.patch({ resource, id, body }).catch(wrapResponseError);
 }
 
 export function find<T>(
