@@ -17,6 +17,7 @@ interface ReleaseAttributesBase {
 	source: string;
 	start_timestamp: Date;
 	end_timestamp?: Date;
+	contract?: string;
 }
 
 // tslint:disable-next-line no-empty-interface
@@ -46,6 +47,8 @@ export interface ServiceAttributes extends ServiceAttributesBase {
 export interface ReleaseAttributes extends ReleaseAttributesBase {
 	is_created_by__user: number;
 	belongs_to__application: number;
+	semver?: string;
+	is_final?: boolean;
 }
 
 export interface ImageAttributes extends ImageAttributesBase {
@@ -73,6 +76,8 @@ export interface ServiceModel extends ServiceAttributesBase {
 
 export interface ReleaseModel extends ReleaseAttributesBase {
 	id: number;
+	semver: string;
+	is_final: boolean;
 }
 
 export interface ImageModel extends ImageAttributesBase {

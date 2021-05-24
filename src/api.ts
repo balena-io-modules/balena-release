@@ -84,6 +84,16 @@ export interface Request {
 	 * The external identifier for the release.
 	 */
 	commit: string;
+
+	/**
+	 * Mark the created release as final/draft
+	 */
+	is_final?: boolean;
+
+	/**
+	 * Release version string
+	 */
+	semver?: string;
 }
 
 export interface Response {
@@ -111,6 +121,10 @@ export async function create(req: Request): Promise<Response> {
 		status: 'running',
 		source: req.source,
 		start_timestamp: new Date(),
+		is_final: !!req.is_final,
+
+		// Only set semver if provided on the request
+		...(!!req.semver && { semver: req.semver }),
 	});
 
 	const res = { release, serviceImages: {} } as Response;
