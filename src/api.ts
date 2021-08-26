@@ -94,6 +94,9 @@ export interface Request {
 	 * Release version string
 	 */
 	semver?: string;
+
+	/** 'balena.yml' contract contents (stringified JSON) */
+	contract?: string;
 }
 
 export interface Response {
@@ -122,7 +125,7 @@ export async function create(req: Request): Promise<Response> {
 		source: req.source,
 		start_timestamp: new Date(),
 		is_final: !!req.is_final,
-
+		contract: req.contract,
 		// Only set semver if provided on the request
 		...(!!req.semver && { semver: req.semver }),
 	});
