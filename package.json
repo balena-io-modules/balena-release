@@ -1,6 +1,6 @@
 {
   "name": "balena-release",
-  "version": "3.1.0",
+  "version": "3.2.0",
   "description": "Create releases on balena without the boilerplate",
   "main": "build/index.js",
   "types": "build/index.d.ts",
@@ -48,5 +48,8 @@
     "rimraf": "^3.0.2",
     "ts-node": "^8.10.1",
     "typescript": "^3.9.7"
+  },
+  "versionist": {
+    "publishedAt": "2021-08-26T13:38:45.012Z"
   }
 }
