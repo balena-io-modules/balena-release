@@ -1,6 +1,6 @@
 import * as Bluebird from 'bluebird';
 import { PinejsClientRequest } from 'pinejs-client-request';
-import { Composition } from 'resin-compose-parse';
+import { Composition } from '@balena/compose-parse';
 import * as models from './models';
 import { Dict } from './types';
 
@@ -69,9 +69,9 @@ export interface Request {
 
 	/**
 	 * The composition to deploy; it should be a normalised structure whose schema
-	 * is defined in `resin-compose-parse`.
+	 * is defined in `@balena/compose-parse`.
 	 *
-	 * See: https://github.com/balena-io-modules/resin-compose-parse
+	 * See: https://github.com/balena-io-modules/balena-compose-parse
 	 */
 	composition: Composition;
 
