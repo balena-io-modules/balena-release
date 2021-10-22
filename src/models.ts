@@ -1,6 +1,6 @@
 import type { PinejsClientRequest } from 'pinejs-client-request';
 import type { Expand, Filter, ODataOptions } from 'pinejs-client-core';
-import type { Composition } from 'resin-compose-parse';
+import type { Composition } from '@balena/compose-parse';
 
 import * as errors from './errors';
 
